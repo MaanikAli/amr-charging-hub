@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const vehicleTypeSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
@@ -6,4 +6,4 @@ const vehicleTypeSchema = new mongoose.Schema({
   chargingFee: { type: Number, required: true },
 });
 
-export default mongoose.model('VehicleType', vehicleTypeSchema);
+module.exports = mongoose.model('VehicleType', vehicleTypeSchema);

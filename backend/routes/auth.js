@@ -1,8 +1,8 @@
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import Admin from '../models/Admin.js';
-import auth from '../middleware/auth.js';
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const Admin = require('../models/Admin.js');
+const auth = require('../middleware/auth.js');
 const router = express.Router();
 
 const SECRET_KEY = process.env.JWT_SECRET || 'secret';
@@ -24,18 +24,24 @@ router.post('/login', async (req, res) => {
 
 // Update admin credentials
 router.put('/update', auth, async (req, res) => {
-  const { currentUsername, currentPassword, newUsername, newPassword } = req.body;
+  const { currentPassword, newUsername, newPassword } = req.body;
   try {
-    const admin = await Admin.findOne({ username: currentUsername });
-    if (!admin) return res.status(401).json({ message: 'Invalid credentials' });
+    const admin = await Admin.findById(req.adminId);
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
     const isMatch = await bcrypt.compare(currentPassword, admin.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!isMatch) return res.status(401).json({ message: 'Invalid current password' });
 
-    admin.username = newUsername || admin.username;
+    if (newUsername && newUsername !== admin.username) {
+      const existingAdmin = await Admin.findOne({ username: newUsername });
+      if (existingAdmin) return res.status(400).json({ message: 'Username already taken' });
+      admin.username = newUsername;
+    }
+
     if (newPassword) {
       admin.password = await bcrypt.hash(newPassword, 10);
     }
+
     await admin.save();
 
     res.json({ message: 'Credentials updated successfully' });
@@ -44,4 +50,4 @@ router.put('/update', auth, async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

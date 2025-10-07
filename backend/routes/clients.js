@@ -1,7 +1,7 @@
-import express from 'express';
-import Client from '../models/Client.js';
-import VehicleType from '../models/VehicleType.js'; // Import VehicleType model
-import { v4 as uuidv4 } from 'uuid'; // Import uuid library
+const express = require('express');
+const Client = require('../models/Client.js');
+const VehicleType = require('../models/VehicleType.js'); // Import VehicleType model
+const { v4: uuidv4 } = require('uuid'); // Import uuid library
 const router = express.Router();
 
 // GET all clients
@@ -86,9 +86,12 @@ router.post('/:id/transactions', async (req, res) => {
     if (!vehicleType) return res.status(404).json({ message: 'Vehicle type not found' });
 
     const transaction = {
-      ...req.body,
+      id: req.body.id || uuidv4(),
+      timestamp: req.body.timestamp || new Date().toISOString(),
       vehicleTypeId: client.vehicleTypeId, // Automatically set from profile
       payableAmount: vehicleType.chargingFee, // Calculate payable amount
+      cashReceived: req.body.cashReceived || 0,
+      due: vehicleType.chargingFee - (req.body.cashReceived || 0), // Calculate due properly
     };
 
     client.transactions.push(transaction);
@@ -100,4 +103,42 @@ router.post('/:id/transactions', async (req, res) => {
   }
 });
 
-export default router;
+// PUT update a transaction
+router.put('/:id/transactions/:txId', async (req, res) => {
+  try {
+    const client = await Client.findOne({ id: req.params.id });
+    if (!client) return res.status(404).json({ message: 'Client not found' });
+
+    const txIndex = client.transactions.findIndex(tx => tx.id === req.params.txId);
+    if (txIndex === -1) return res.status(404).json({ message: 'Transaction not found' });
+
+    // Update the transaction
+    client.transactions[txIndex] = { ...client.transactions[txIndex], ...req.body };
+
+    // Recalculate due if cashReceived changed
+    if (req.body.cashReceived !== undefined) {
+      client.transactions[txIndex].due = client.transactions[txIndex].payableAmount - req.body.cashReceived;
+    }
+
+    await client.save();
+    res.json(client);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// DELETE a transaction
+router.delete('/:id/transactions/:txId', async (req, res) => {
+  try {
+    const client = await Client.findOne({ id: req.params.id });
+    if (!client) return res.status(404).json({ message: 'Client not found' });
+
+    client.transactions = client.transactions.filter(tx => tx.id !== req.params.txId);
+    await client.save();
+    res.json(client);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+module.exports = router;
