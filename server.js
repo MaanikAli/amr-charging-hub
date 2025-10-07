@@ -2,10 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const path = require('path');
 require('dotenv').config();
 
-const Admin = require('./models/Admin');
-const auth = require('./middleware/auth');
+const Admin = require('./backend/models/Admin');
+const auth = require('./backend/middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,9 +32,23 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/clients', auth, require('./routes/clients'));
-app.use('/api/vehicleTypes', auth, require('./routes/vehicleTypes'));
+app.use('/api/auth', require('./backend/routes/auth'));
+app.use('/api/clients', auth, require('./backend/routes/clients'));
+app.use('/api/vehicleTypes', auth, require('./backend/routes/vehicleTypes'));
+
+// Serve static files from dist
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Serve index.html for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 // For Vercel deployment
-module.exports = app;
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
