@@ -1,12 +1,18 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const path = require('path');
-require('dotenv').config();
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import bcrypt from 'bcryptjs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
-const Admin = require('./backend/models/Admin');
-const auth = require('./backend/middleware/auth');
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import Admin from './backend/models/Admin.js';
+import auth from './backend/middleware/auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,9 +38,13 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
-app.use('/api/auth', require('./backend/routes/auth'));
-app.use('/api/clients', auth, require('./backend/routes/clients'));
-app.use('/api/vehicleTypes', auth, require('./backend/routes/vehicleTypes'));
+import authRoutes from './backend/routes/auth.js';
+import clientRoutes from './backend/routes/clients.js';
+import vehicleTypeRoutes from './backend/routes/vehicleTypes.js';
+
+app.use('/api/auth', authRoutes);
+app.use('/api/clients', auth, clientRoutes);
+app.use('/api/vehicleTypes', auth, vehicleTypeRoutes);
 
 // Serve static files from dist
 app.use(express.static(path.join(__dirname, 'dist')));

@@ -1,7 +1,7 @@
-const express = require('express');
-const Client = require('../models/Client');
-const VehicleType = require('../models/VehicleType'); // Import VehicleType model
-const { v4: uuidv4 } = require('uuid'); // Import uuid library
+import express from 'express';
+import Client from '../models/Client.js';
+import VehicleType from '../models/VehicleType.js'; // Import VehicleType model
+import { v4 as uuidv4 } from 'uuid'; // Import uuid library
 const router = express.Router();
 
 // GET all clients
@@ -100,4 +100,4 @@ router.post('/:id/transactions', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

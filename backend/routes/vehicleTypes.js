@@ -1,6 +1,6 @@
-const express = require('express');
-const VehicleType = require('../models/VehicleType');
-const { v4: uuidv4 } = require('uuid'); // Import uuid library
+import express from 'express';
+import VehicleType from '../models/VehicleType.js';
+import { v4 as uuidv4 } from 'uuid'; // Import uuid library
 const router = express.Router();
 
 // GET all vehicle types
@@ -74,4 +74,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
