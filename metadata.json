@@ -1,0 +1,5 @@
+{
+  "name": "Copy of Copy of AMR Charging Hub",
+  "description": "A professional web and mobile application to manage client information and charging cost accounting for an autorickshaw charging hub. It supports offline functionality, saving data locally and syncing when a connection is available.",
+  "requestFramePermissions": []
+}
