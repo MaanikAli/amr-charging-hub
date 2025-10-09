@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
   id: { type: String, required: true },
@@ -22,4 +22,4 @@ const clientSchema = new mongoose.Schema({
   createdAt: { type: String, required: true },
 });
 
-export default mongoose.model('Client', clientSchema);
+module.exports = mongoose.model('Client', clientSchema);
